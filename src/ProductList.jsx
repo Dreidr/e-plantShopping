@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './ProductList.css'
 import CartItem from './CartItem';
+import { useDispatch } from 'react-redux';
+import { addItem } from './slices/CartSlice.jsx';
+
+
 function ProductList({ onHomeClick }) {
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
+
+     // Track which products are in the cart
+    const [addedToCart, setAddedToCart] = useState({}); // { [productName]: true }
+    const dispatch = useDispatch(); 
 
     const plantsArray = [
         {
@@ -252,6 +260,26 @@ function ProductList({ onHomeClick }) {
         e.preventDefault();
         setShowCart(false);
     };
+
+    const handleAddToCart = (plant) => {
+    // Normalize payload for the cart slice (id/name/price/image/qty)
+    dispatch(
+        addItem({
+        id: plant.id ?? plant.name, // use a real id if you have one
+        name: plant.name,
+        image: plant.image,
+        price:
+            typeof plant.cost === 'string'
+            ? Number(plant.cost.replace(/[^0-9.]/g, ''))
+            : plant.cost,
+        description: plant.description,
+        qty: 1,
+        })
+    );
+
+    // reflect UI state: this product has been added
+    setAddedToCart((prev) => ({ ...prev, [plant.name]: true }));
+    };
     return (
         <div>
             <div className="navbar" style={styleObj}>
@@ -274,9 +302,37 @@ function ProductList({ onHomeClick }) {
             </div>
             {!showCart ? (
                 <div className="product-grid">
+                    {plantsArray.map((section) => (
+                        <div key={section.category} className="plant-section">
+                        <div className="plantname_heading">
+                            <h2 className="plant_heading">{section.category}</h2>
+                        </div>
 
+                        <div className="product-list">
+                            {section.plants.map((plant) => (
+                            <div key={plant.name} className="product-card">
+                                <img
+                                className="product-image"
+                                src={plant.image}
+                                alt={plant.name}
+                                />
+                                <div className="product-title">{plant.name}</div>
+                                <div>{plant.description}</div>
+                                <div className="product-price">{plant.cost}</div>
+                                  <button
+                                    className={`product-button ${addedToCart[plant.name] ? 'added-to-cart' : ''}`}
+                                    onClick={() => handleAddToCart(plant)}
+                                    disabled={!!addedToCart[plant.name]}
+                                    >
+                                    {addedToCart[plant.name] ? 'Added' : 'Add to Cart'}
+                                </button>
+                            </div>
+                            ))}
+                        </div>
+                        </div>
+                    ))}
+                    </div>
 
-                </div>
             ) : (
                 <CartItem onContinueShopping={handleContinueShopping} />
             )}

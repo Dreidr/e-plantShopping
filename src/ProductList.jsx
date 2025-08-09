@@ -225,7 +225,7 @@ function ProductList({ onHomeClick }) {
     ];
     const styleObj = {
         backgroundColor: '#4CAF50',
-        color: '#fff!important',
+        color: '#fff',
         padding: '15px',
         display: 'flex',
         justifyContent: 'space-between',
